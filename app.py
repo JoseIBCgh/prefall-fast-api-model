@@ -1,11 +1,13 @@
-from flask import Flask, jsonify, request
+from fastapi.encoders import jsonable_encoder
+from fastapi import FastAPI
 
-# Intitialise the app
-app = Flask(__name__)
+from typing import Optional
+
+app = FastAPI()
 
 # Define what the app does
 @app.get("/greet")
-def index():
+def index(fname: str, lname: Optional[str] = None):
     """
     TODO:
     1. Capture first name & last name
@@ -14,8 +16,6 @@ def index():
     4. If first name is provided byt second name is not provided: respond with "Hello, <first-name>!"
     5. If both names are provided: respond with a question, "Is your name <fist-name> <second-name>
     """
-    fname = request.args.get( "fname" )
-    lname = request.args.get( "lname" )
 
     if not fname and not lname:
         # If both first name and last name are missing, return an error
@@ -30,7 +30,4 @@ def index():
         # if none of the above is true, then both names must be present
         response = { "data" : f"Is your name {fname} {lname} ?" }
 
-    return jsonify(response)
-
-if __name__ == "__main__" :
-   app.run()
+    return jsonable_encoder(response)
