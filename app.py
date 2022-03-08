@@ -31,6 +31,3 @@ def index(fname: str, lname: Optional[str] = None):
         response = { "data" : f"Is your name {fname} {lname} ?" }
 
     return jsonable_encoder(response)
-
-if __name__ == "__main__":
-    app.run()
