@@ -31,3 +31,6 @@ def index():
         response = { "data" : f"Is your name {fname} {lname} ?" }
 
     return jsonify(response)
+
+if __name__ == "__main__" :
+   app.run()
