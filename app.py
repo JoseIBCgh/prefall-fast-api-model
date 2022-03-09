@@ -7,7 +7,7 @@ app = FastAPI()
 
 # Define what the app does
 @app.get("/greet")
-def index(fname: str, lname: Optional[str] = None):
+async def index(fname: str, lname: Optional[str] = None):
     """
     TODO:
     1. Capture first name & last name

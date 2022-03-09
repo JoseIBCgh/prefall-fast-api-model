@@ -47,4 +47,3 @@ watchgod==0.7
 wcwidth==0.2.5
 websockets==9.1
 Werkzeug==2.0.1
-gunicorn==20.1.0
