@@ -3,6 +3,11 @@ from fastapi import FastAPI
 
 from typing import Optional
 
+import uvicorn
+
+from celery_worker import create_order
+from model import Order
+
 app = FastAPI()
 
 # Define what the app does
@@ -24,5 +29,11 @@ async def index(fname: Optional[str] = None, lname: Optional[str] = None):
 
     return jsonable_encoder(response)
 
+@app.post('/order')
+def add_order(order: Order):
+    # use delay() method to call the celery task
+    create_order.delay(order.customer_name, order.order_quantity)
+    return {"message": "Order Received! Thank you for your patience."}
+    
 if __name__ == "__main__":
     uvicorn.run(app, host='0.0.0.0')
