@@ -38,9 +38,12 @@ def predict(acc_x, acc_y, acc_z):
     average = numpy.average(prediction, axis=0)
     celery_log.info(f"Prediction Complete!")
     return {"message": "Prediction complete", "prediction": list(zip(clf.classes_, average)), 
-    "fall_probability": fall_probability(average, clf.classes_)}
+    "fall_probability": fall_probability(average, clf.classes_), "intercept": clf.intercept_.tolist(), 
+    "coef": clf.coef_.tolist()}
 
 def fall_probability(prediction, classes):
+    index = numpy.where(classes == "Fall")[0][0]
+    return prediction[index]
     boolArray = list(map(lambda x: "Fall" in x, classes))
     predictionFall = prediction[boolArray]
     return numpy.sum(predictionFall)
