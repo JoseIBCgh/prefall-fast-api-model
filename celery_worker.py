@@ -40,7 +40,8 @@ def predict(acc_x, acc_y, acc_z):
     prediction = clf.predict_proba(array)[0]
     celery_log.info(f"Prediction Complete!")
     return {"message": "Prediction complete", "prediction": list(zip(clf.classes_, prediction)), 
-    "fall_probability": fall_probability(prediction, clf.classes_), "plot":generate_plot()}
+    "fall_probability": fall_probability(prediction, clf.classes_), "intercept": clf.intercept_.tolist(), 
+    "coef": clf.coef_.tolist()}
 
 def fall_probability(prediction, classes):
     boolArray = list(map(lambda x: "Fall" in x, classes))
