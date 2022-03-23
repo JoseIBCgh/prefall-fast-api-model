@@ -13,7 +13,11 @@ celery_log = get_task_logger(__name__)
 # Example process of long running task
 import pickle
 import numpy
-with open('model.pkl', 'rb') as fid:
+import plotly
+import plotly.graph_objs as go
+import json
+
+with open('model_linear.pkl', 'rb') as fid:
     clf = pickle.load(fid)
 
 @celery.task
@@ -31,19 +35,24 @@ def create_order(name, quantity):
 
 @celery.task
 def predict(acc_x, acc_y, acc_z):
-    array = [acc_x, acc_y, acc_z]
-    array = numpy.array(array)
-    array = array.transpose((1,0))
-    prediction = clf.predict_proba(array)
-    average = numpy.average(prediction, axis=0)
+    array = [numpy.average(acc_x), numpy.average(acc_y), numpy.average(acc_z)]
+    array = numpy.array(array).reshape(1,-1)
+    prediction = clf.predict_proba(array)[0]
     celery_log.info(f"Prediction Complete!")
-    return {"message": "Prediction complete", "prediction": list(zip(clf.classes_, average)), 
-    "fall_probability": fall_probability(average, clf.classes_), "intercept": clf.intercept_.tolist(), 
-    "coef": clf.coef_.tolist()}
+    return {"message": "Prediction complete", "prediction": list(zip(clf.classes_, prediction)), 
+    "fall_probability": fall_probability(prediction, clf.classes_), "plot":generate_plot()}
 
 def fall_probability(prediction, classes):
-    index = numpy.where(classes == "Fall")[0][0]
-    return prediction[index]
     boolArray = list(map(lambda x: "Fall" in x, classes))
     predictionFall = prediction[boolArray]
     return numpy.sum(predictionFall)
+
+def generate_plot():
+    fig = go.FigureWidget()
+    for coef, intercept in zip(clf.coef_,clf.intercept_):
+        z = lambda x,y: (-intercept-coef[0]*x-coef[1]*y) / coef[2]
+        tmp = numpy.linspace(-2,2,51)
+        x,y = numpy.meshgrid(tmp,tmp)
+        fig.add_surface(x=x, y=y, z=z(x,y), colorscale='Greys', showscale=False)
+
+    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
