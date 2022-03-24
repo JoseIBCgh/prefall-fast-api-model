@@ -39,9 +39,24 @@ def predict(acc_x, acc_y, acc_z):
     array = numpy.array(array).reshape(1,-1)
     prediction = clf.predict_proba(array)[0]
     celery_log.info(f"Prediction Complete!")
+    print(clf.calibrated_classifiers_)
     return {"message": "Prediction complete", "prediction": list(zip(clf.classes_, prediction)), 
-    "fall_probability": fall_probability(prediction, clf.classes_), "intercept": clf.intercept_.tolist(), 
-    "coef": clf.coef_.tolist()}
+    "intercept": intercept().tolist(), "coef": coef().tolist()}
+
+def coef():
+    coef_avg = 0
+    for m in clf.calibrated_classifiers_:
+        coef_avg = coef_avg + m.base_estimator.coef_
+        print(m.base_estimator.coef_)
+    coef_avg  = coef_avg/len(clf.calibrated_classifiers_)
+    return coef_avg
+
+def intercept():
+    intercept_avg = 0
+    for m in clf.calibrated_classifiers_:
+        intercept_avg = intercept_avg + m.base_estimator.intercept_
+    intercept_avg  = intercept_avg/len(clf.calibrated_classifiers_)
+    return intercept_avg
 
 def fall_probability(prediction, classes):
     boolArray = list(map(lambda x: "Fall" in x, classes))
