@@ -16,6 +16,7 @@ import numpy
 import plotly
 import plotly.graph_objs as go
 import json
+import pandas
 
 with open('model_linear.pkl', 'rb') as fid:
     clf = pickle.load(fid)
@@ -40,8 +41,8 @@ def predict(acc_x, acc_y, acc_z):
     prediction = clf.predict_proba(array)[0]
     celery_log.info(f"Prediction Complete!")
     print(clf.calibrated_classifiers_)
-    return {"message": "Prediction complete", "prediction": list(zip(clf.classes_, prediction)), 
-    "intercept": intercept().tolist(), "coef": coef().tolist()}
+    return {"model_id": model_id(),"message": "Prediction complete", "prediction": list(zip(clf.classes_, prediction)), 
+    "intercept": intercept().tolist(), "coef": coef().tolist(), "training_data": training_data()}
 
 def coef():
     coef_avg = 0
@@ -57,6 +58,22 @@ def intercept():
         intercept_avg = intercept_avg + m.base_estimator.intercept_
     intercept_avg  = intercept_avg/len(clf.calibrated_classifiers_)
     return intercept_avg
+
+def training_data():
+    df = pandas.read_csv("datos_aug.csv")
+    subdf = df.groupby('Position').head(20)
+    classes = df['Position'].unique()
+    result = {}
+    for c in classes:
+        result[c] = subdf[subdf['Position'] == c].iloc[:3].to_json()
+    return result
+
+def model_id():
+    return 1
+    sum = 0
+    for m in clf.calibrated_classifiers_:
+        sum = sum + m
+    return sum / len(clf.calibrated_classifiers_)
 
 def fall_probability(prediction, classes):
     boolArray = list(map(lambda x: "Fall" in x, classes))
