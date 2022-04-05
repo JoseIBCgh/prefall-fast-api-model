@@ -42,7 +42,6 @@ def predict(acc_x, acc_y, acc_z):
     array = numpy.array(array).reshape(1,-1)
     prediction = clf.predict_proba(array)[0]
     celery_log.info(f"Prediction Complete!")
-    print(clf.calibrated_classifiers_)
     return {"model_id": model_id(),"message": "Prediction complete", "prediction": list(zip(clf.classes_, prediction)), 
     "intercept": intercept().tolist(), "coef": coef().tolist(), "training_data": training_data()}
 
@@ -50,7 +49,6 @@ def coef():
     coef_avg = 0
     for m in clf.calibrated_classifiers_:
         coef_avg = coef_avg + m.base_estimator.coef_
-        print(m.base_estimator.coef_)
     coef_avg  = coef_avg/len(clf.calibrated_classifiers_)
     return coef_avg
 
@@ -64,14 +62,20 @@ def intercept():
 def training_data():
     df = pandas.read_csv("datos_aug.csv")
     subdf = df.groupby('Position').head(20)
+    subdf = subdf.drop(columns=["Unnamed: 0"])
+    subdf = subdf.reset_index(drop=True)
+    print(subdf)
     classes = df['Position'].unique()
     result = {}
     for c in classes:
-        result[c] = subdf[subdf['Position'] == c].iloc[:3].to_json()
+        result[c] = subdf[subdf['Position'] == c].iloc[:,:3].to_json()
+    print(result)
     return result
 
 def model_id():
     return 1
+    from random import randrange
+    return randrange(100000)
     sum = 0
     for m in clf.calibrated_classifiers_:
         sum = sum + m
