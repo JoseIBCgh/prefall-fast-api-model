@@ -13,8 +13,10 @@ celery_log = get_task_logger(__name__)
 # Example process of long running task
 import pickle
 import numpy
+'''
 import plotly
 import plotly.graph_objs as go
+'''
 import json
 import pandas
 
@@ -79,7 +81,7 @@ def fall_probability(prediction, classes):
     boolArray = list(map(lambda x: "Fall" in x, classes))
     predictionFall = prediction[boolArray]
     return numpy.sum(predictionFall)
-
+'''
 def generate_plot():
     fig = go.FigureWidget()
     for coef, intercept in zip(clf.coef_,clf.intercept_):
@@ -89,3 +91,4 @@ def generate_plot():
         fig.add_surface(x=x, y=y, z=z(x,y), colorscale='Greys', showscale=False)
 
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+'''
