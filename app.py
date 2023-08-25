@@ -1,5 +1,5 @@
 from fastapi.encoders import jsonable_encoder
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from typing import Optional
@@ -8,6 +8,10 @@ import uvicorn
 
 from celery_worker import create_order, predict, celery
 from model import Order, Data
+
+import pandas as pd
+
+import io
 
 app = FastAPI()
 
@@ -49,8 +53,12 @@ def add_order(order: Order):
     return {"message": "Order Received! Thank you for your patience."}
     
 @app.post('/predict')
-def add_predict(data: Data):
-    task = predict.delay(data.acc_x, data.acc_y, data.acc_z)
+def add_predict(csv_file: UploadFile = File(...)):
+    # Handle the uploaded CSV file
+    csv_content = csv_file.file.read().decode("utf-8")
+
+    task = predict.delay(csv_content)
+
     return {"message": "Prediction started", "task_id": task.task_id}
 
 @app.get("/tasks/<task_id>")
