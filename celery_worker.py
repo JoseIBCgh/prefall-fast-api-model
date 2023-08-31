@@ -194,8 +194,7 @@ def predict(csv_content):
 
     celery_log.info(f"Prediction Complete!")
     celery_log.info(texto)
-    return {"model_id": model_id(),"message": "Prediction complete", "prediction": list(zip(clf.classes_, prediction)), 
-    "intercept": intercept().tolist(), "coef": coef().tolist(), "training_data": training_data()}
+    return {"model_id": model_id(),"message": "Prediction complete", "probability": prediccion}
 
 def coef():
     coef_avg = 0
