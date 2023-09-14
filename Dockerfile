@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 FROM python:3.8-slim-buster
-
+EXPOSE 8000
 WORKDIR /fastapi-docker
 
 COPY requirements.txt requirements.txt
