@@ -7,6 +7,7 @@ services:
     depends_on:
       - rabbitmq
       - redis
+      - celery  # Agrega dependencia a celery para que espere su disponibilidad
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -21,6 +22,16 @@ services:
     image: "redis:latest"
     ports:
       - "6379:6379"
-    restart: unless-stopped  # Evita que Redis se reinicie automáticamente
+    restart: unless-stopped
+
+  celery:
+    build: ./celery_worker  # Ruta al Dockerfile del servicio de Celery
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    command: celery -A celery_worker.celery worker --loglevel=info
 
 
