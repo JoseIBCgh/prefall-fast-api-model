@@ -5,7 +5,7 @@ import os
 # Initialize celery
 #celery = Celery('tasks', broker='amqp://guest:guest@127.0.0.1:5672//', backend='rpc')
 celery = Celery(__name__)
-celery.conf.broker_url = os.environ.get("CELERY_BROKER_URL", "amqp://guest:guest@rabbitmq:5673//")
+celery.conf.broker_url = os.environ.get("CELERY_BROKER_URL", "amqp://guest:guest@rabbitmq:5672//")
 celery.conf.result_backend = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6380/0") 
 # Create logger - enable to display messages on task logger
 celery_log = get_task_logger(__name__)

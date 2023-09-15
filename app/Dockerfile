@@ -15,7 +15,7 @@ ENV CELERY_RESULT_BACKEND=redis://redis:6379/0
 EXPOSE 8000
 
 # Comando para ejecutar la aplicación FastAPI
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 
 
