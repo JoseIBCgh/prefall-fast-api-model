@@ -9,7 +9,7 @@ COPY . /app
 RUN pip install -r requirements.txt
 
 # Configura las variables de entorno para Celery
-ENV CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+ENV CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:32823//
 ENV CELERY_RESULT_BACKEND=redis://redis:6379/0
 
 EXPOSE 8000
