@@ -9,7 +9,7 @@ services:
       - redis
       - celery  # Agrega dependencia a celery para que espere su disponibilidad
     environment:
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:32823//
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     command: uvicorn app:app --host 0.0.0.0 --port 8000
 
@@ -30,7 +30,7 @@ services:
       - rabbitmq
       - redis
     environment:
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:32823//
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     command: celery -A celery_worker.celery worker --loglevel=info
 
