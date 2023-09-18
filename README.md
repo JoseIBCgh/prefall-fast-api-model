@@ -1,87 +1,96 @@
-> For help and support open a topic in [Discussions](https://github.com/CloudBytesDotDev/web-apis-with-python/discussions) above.
 
-# Starter Kit: Web APIs with Python
 
-This is the starter kit associate with "Building Web APIs with Python" which the following version available
+### Puesta en producción de aplicación prefall en cloud
+1 - Webapp
+2 - Mysql
+3. - Ecosistema: fastapi, rabbitmq, redis, celery.
 
-1. Kindle Edition: [Get it here](https://kdp.amazon.com/amazon-dp-action/us/dualbookshelf.marketplacelink/B09BJLKM6F)
 
-## Usage Instructions
+**Step 1**: Compilar las imágenes previamente y obtendremos Rabbitmq y Redis. También puedes ser tomadas de dockerhub.
 
-This repository contains the starter kit for each exercise in a separate branch. 
 
-If you are unfamiliar with Git and GitHub, please read the instructions on usage below carefully and follow the steps. 
+**Step 2**: Subida de Rabbitmq
 
-### 1. Fork to create your own copy of the repository
 
-**Step 1**: Login to [GitHub](https://github.com) and navigate to [this repository](https://github.com/CloudBytesDotDev/web-apis-with-python)
+**Step 3**: Subida de Redis.
 
-```http
-https://github.com/CloudBytesDotDev/web-apis-with-python
+
+**Step 4**: Poner el puerto expuesto de Rabbitmq y Redis en la configuración de myapp y celery según los puertos expuestos anteriomente.
+
+https://github.com/IBCBio/prefall-fast-api-model/blob/main/docker-compose.yml
+
+* Cambiar el environment de myapp
+```bash
+ myapp:
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@srv.ibc.bio:32837//
+      - CELERY_RESULT_BACKEND=redis://srv.ibc.bio:32828/0
 ```
-
-**Step 2**: Create a Fork of the repository by clicking on the fork button on top right side of the webpage as shown below
-
-![image-20210604203326830](https://user-images.githubusercontent.com/4152163/120856800-f96ade80-c59d-11eb-9f8a-7a217dd98767.png)
-
-This will create a copy of the repository in your account. 
-
-**Step 3**: Clone this new repository in your account. To Copy the Git URL press on the Green "Code" button and then click on the clipboard icon as shown below
-
-![image-20210604204305086](https://user-images.githubusercontent.com/4152163/120856928-27502300-c59e-11eb-9826-eb7777efe3f2.png)
-
-Or you can run the following command from your terminal with Git installed, replacing "<myUserName>" with our actual GitHub username
+* Cambiar el environment del celery
 
 ```bash
-git clone https://github.com/<myUserName>/web-apis-with-python.git
+  celery:
+    
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@srv.ibc.bio:32837//
+      - CELERY_RESULT_BACKEND=redis://srv.ibc.bio:32828/0
 ```
 
-### 2. Navigate to the starter kit
+**Step 5**: Poner el puerto del Step 4 en el celery:
 
-From the terminal, run the below command to navigate to a particular branch, replace "<branch-name>" with the name of the branch (typically provided in the exercise)
+https://github.com/IBCBio/prefall-fast-api-model/blob/main/celery_worker/celery_worker.py
+
+```
+celery.conf.result_backend = os.environ.get("CELERY_RESULT_BACKEND", "redis://srv.ibc.bio:32828/0") 
+```
+
+**Step 5**: Ídem que paso 5 pero en la ruta app
+https://github.com/IBCBio/prefall-fast-api-model/blob/main/app/celery_worker.py
+```
+celery.conf.broker_url = os.environ.get("CELERY_BROKER_URL", "amqp://guest:guest@srv.ibc.bio:32837//")
+celery.conf.result_backend = os.environ.get("CELERY_RESULT_BACKEND", "redis://srv.ibc.bio:32828/0") 
+```
+
+**Step 5**: Configuración de puertos en el docker file
+
+https://github.com/IBCBio/prefall-fast-api-model/blob/main/app/Dockerfile
 
 ```bash
-git checkout <branch-name>
+# Configura las variables de entorno para Celery
+ENV CELERY_BROKER_URL=amqp://guest:guest@srv.ibc.bio:32837//
+ENV CELERY_RESULT_BACKEND=redis://srv.ibc.bio:32828/0
 ```
 
-The "branch-name" should match exactly to the branch specified in the exercises. 
+**Step 6**: Rebuild de las imágenes y obtendremos la fastapi. Subimos al docker la fastapi y vemos el puerto expuesto.
 
-You should also set the upstream (online) branch by running
+**Step 7**: Subida de mysql8
+
+Importar prefall.sql en mysql y conocer la cadena de conexión mysql.
+
+**Step 8**: Configuración de la webapp. Cambio de puerto para que utilice el de la fastapi
+https://github.com/IBCBio/prefall-webapp-code/blob/main/apps/static/assets/js/predict.js
 
 ```bash
-git push --set-upstream origin <branch-name>
+...
+// Send the AJAX POST request
+        $.ajax({
+            type: 'POST',
+            url: 'http://srv.ibc.bio:32840/predict',
+...
+function poll(task_id){
+    console.log("poll")
+    $.getJSON('http://srv.ibc.bio:32840/tasks/<task_id>?task_id=' + task_id, function(data) {
+...
 ```
 
-### 3. Track the changes and push it to your repository on GitHub
+- Configurar conexión mysql
 
-This involves 4 steps.
-
-**Step 1**: Check the changes you have made by running
-
-```bash
-git status
+https://github.com/IBCBio/prefall-webapp-code/blob/main/apps/config.py
 ```
-
-This will highlight the files that been added, deleted or changed. 
-
-**Step 2**: Add the changes to the working tree
-
-```bash
-git add <file-name>
+   SQLALCHEMY_DATABASE_URI = 'mysql://root:root@srv.ibc.bio:32817/prefall'
 ```
+Se regenera la imagen de webapp y se sube
 
-`git status` will provide you will list of files, you will need to do this with each file that has been added or changed.
 
-**Step 3**: Record and commit the changes
 
-```bash
-git commit -m "<What changes have you done?>"
-```
 
-**Step 4**: Push your changes to GitHub (origin)
-
-```bash
-git push
-```
-
-This requires the `git push --set-upstream origin <branch-name>` completed as specified in section 2 above
